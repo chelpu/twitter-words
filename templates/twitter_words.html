@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://yourjavascript.com/2715118914/d3-layout-cloud.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+  var fill = d3.scale.category20();
+
+  $.get("/data",function(data) {
+    res = $.parseJSON(data)
+    res = d3.entries(res)
+    console.log(res)
+    var fontSize = d3.scale.log().range([20, 80]);
+
+    var layout = d3.layout.cloud()
+      .size([$(window).width(), $(window).height()])
+      .timeInterval(10)
+      .text(function(d) { return d.key; })
+      .font("Impact")
+      .fontSize(function(d) { return fontSize(+d.value); })
+      .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
+      .padding(1)
+      .on("end", draw)
+      .words(res)
+      .start();
+
+      var translate = "translate(" + $(window).width()/2 + "," +
+                                     $(window).height()/2 + ")";
+
+      function draw(words) {
+        d3.select("body").append("svg")
+            .attr("width", $(window).width())
+            .attr("height", $(window).height())
+          .append("g")
+            .attr("transform", translate)
+          .selectAll("text")
+            .data(words)
+          .enter().append("text")
+            .style("font-size", function(d) { return d.size + "px"; })
+            .style("font-family", "Impact")
+            .style("fill", function(d, i) { return fill(i); })
+            .attr("text-anchor", "middle")
+            .attr("transform", function(d) {
+              return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+            })
+            .text(function(d) { return d.text; });
+      }
+    }
+  );
+</script>
